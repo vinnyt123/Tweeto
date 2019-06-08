@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <div class="personNameArea">
+        <h3 class="personNameLabel">Select a friend to chat with...</h3>
+    </div>
+    <div class="chatArea">
+        <div class="loading">
+            <i class="fa fa-spinner fa-spin loadingIcon"></i>
+        </div>
+    </div>
+    <div class="enterTextArea">
+        <form>
+            <textarea class="messageBox" rows="2"></textarea>
+            <input type="button" class="sendMessageButton" value="Send" disabled></input>
+        </form>
+    </div>
+{% endblock %}
+{% block sidebar %}   
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <ul class="list-group">
+        {% if users is not none %}
+            {% for user in users %}
+            <a class="onlineUser"><li class="list-group-item">{{ user.username }} <span style="float:right; color:green; padding-top: 3px;"><i class="fa fa-circle"></i></span></li></a>
+            {% endfor %}
+        {% else %}
+        {% endif %}
+        </ul>
+    </div>
+{% endblock %}

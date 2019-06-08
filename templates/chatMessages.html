@@ -1,0 +1,9 @@
+{% for message in messages %}
+    <div class="messageWrapper">
+        {% if message[0] == username %}
+            <div class="sentMessage">{{ message['message'] }}</div>
+        {% else %}
+            <div class="receivedMessage">{{ message['message'] }}</div>
+        {% endif %}
+    </div>
+{% endfor %}

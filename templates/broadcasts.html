@@ -1,0 +1,22 @@
+
+{% extends "layout.html" %}
+{% block content %}
+    <div class="broadcastWrapper">
+        <form action="/sendbroadcast" method="post" enctype="multipart/form-data">
+            <textarea class="col-lg-11" rows="3" name="message" placeholder="Type a message to broadcast to all online users!" style="resize: none;"></textarea>
+            <input class = "sendBroadcastButton" type="submit" value="Send"/>
+        </form>
+    </div>
+        
+    <div class="newsFeed">
+        <ul class="timeline">
+            {% for broadcast in broadcasts %}
+                <li>
+                    <span class="username">{{ broadcast['username'] }}</span>
+                    <span class="float-right">{{ broadcast['sender_created_at']|e }}</span>
+                    <p>{{ broadcast['message']|e }}</p>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}

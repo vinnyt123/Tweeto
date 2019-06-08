@@ -1,0 +1,251 @@
+
+.body {
+    background-color: var(--body-background);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+a {
+    color: inherit;
+    text-decoration: inherit;
+}
+
+:root {
+    --application-color: #0E55B7;
+    --lightest: #5585C7;
+    --lighter: #326CBB;
+    --darker: #0A408C;
+    --darkest: #06326E;
+    --body-background: #e9ebee;
+}
+
+.headerArea {
+    background-color: var(--application-color);
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 42px;
+    text-align: center;
+    border-bottom: 1px solid var(--darker);
+    line-height: 42px;
+    color: white;
+}
+
+.pageHeader {
+    font-size: 32px;
+    line-height: 42px;
+    font-weight: 500;
+    float: left;
+    width: 6%;
+    font-family: "Lobster", serif;
+}
+
+.logoutArea {
+    font-size: 20px;
+    float: right;
+    margin-right: 10px;
+}
+
+.topMenuLink {
+    float: left;
+    font-size: 20px;
+    font-weight: 500;
+    text-align : center;
+    width: 10%;
+    border-left: 2px solid var(--darker);
+    transition: 0.4s;
+    text-decoration: none;
+    color: white;
+}
+
+.topMenuLink:hover {
+    background-color: var(--darker);
+    text-decoration: none;
+    color: white;
+}
+
+.logoutButton, .logoutButton:hover {
+    text-decoration: none;
+    color: white;
+}
+
+.sidebar {
+    position: fixed;
+    right: 0;
+    width: 300px;
+    top: 42px;
+    height: calc(100vh - 42px);
+    border-left: 1px solid lightgray;
+    overflow-y: auto;
+}
+
+.content {
+    margin-top:50px;
+    width:50%;
+    position: absolute;
+    left: 25%;
+    z-index: -1;
+}
+
+.sendBroadcastButton {
+    float: right;
+    margin-top: 25px;
+}
+
+.newsFeed {
+    margin-top: 40px;
+}
+
+.newsFeedItem {
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    border-radius: 5px;
+}
+
+.chatWindow {
+    position: fixed;
+    bottom: 0;
+    right: 210px;
+    width: 200px;
+    height: 300px;
+    background-color: white;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+}
+
+ul.timeline {
+    list-style-type: none;
+    position: relative;
+}
+ul.timeline:before {
+    content: ' ';
+    background: #d4d9df;
+    display: inline-block;
+    position: absolute;
+    left: 29px;
+    width: 2px;
+    height: 100%;
+    z-index: 400;
+}
+ul.timeline > li {
+    margin: 40px 0;
+    padding-left: 20px;
+    white-space: normal;
+    width: 100%;
+    height: auto;
+    word-wrap: break-word;
+}
+ul.timeline > li:before {
+    content: ' ';
+    background: white;
+    display: inline-block;
+    position: absolute;
+    border-radius: 50%;
+    border: 3px solid #22c0e8;
+    left: 20px;
+    width: 20px;
+    height: 20px;
+    z-index: 400;
+}
+
+.chatArea {
+    width: 100%;
+    height: calc(100vh - 212px);
+    overflow-y: auto;
+    background-color: white;
+    padding: 10px;
+}
+
+.personNameArea {
+    height: 60px;
+    width: 100%;
+    background-color: white;
+    border-bottom: 1px solid lightgray;
+    text-align: center;
+}
+
+.enterTextArea {
+    height: 90px;
+    border-top: 1px solid lightgray;
+    background-color: white;
+    width: 100%;
+    padding: 10px;
+}
+
+.messageBox {
+    width: 88%;
+    height: 100%;
+    resize: none;
+}
+
+.sendMessageButton {
+    width: 10%;
+    float: right;
+    margin-top: 15px;
+}
+
+.personNameLabel {
+    line-height: 60px;
+    margin-bottom: 0px;
+}
+
+body, html {
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+
+.onlineUser {
+    cursor: pointer;
+}
+
+.loading {
+    width: 100%;
+    text-align: center;
+    padding-top: 20px;
+    font-size: 100px;
+    display:none;
+}
+
+.sentMessage, .receivedMessage, .sendingMessage {
+    display: inline-block;
+    border-style: hidden;
+    padding: 3px;
+}
+
+.sentMessage, .sendingMessage {
+    border-bottom-left-radius: 4px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    float: right;
+}
+
+.sentMessage {
+    background-color: var(--darker);
+    color: white;
+}
+
+.sendingMessage {
+    background-color: grey;
+    color: black;
+}
+
+.receivedMessage {
+    border-bottom-right-radius: 4px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    background-color: var(--lightest);
+    color: black;
+    float: left;
+}
+
+.username {
+    color: #22c0e8;
+}
+
+.messageWrapper {
+    width: 100%;
+    display: inline-block;
+    margin-bottom: 3px;
+}

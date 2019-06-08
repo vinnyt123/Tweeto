@@ -1,0 +1,38 @@
+<html>
+    <head><title>CS302 example</title>
+        <link rel='stylesheet' type="text/css" href='../static/example.css' />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+        <script src="../static/toggleChatWindow.js"></script>
+        <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lobster">
+        <meta charset="UTF-8">
+    </head>
+
+    <body class="body">
+
+        <!-- HEADER -->
+        <div class="headerArea">
+            <div class="logoutArea">
+                <a class="logoutButton" href="/login">Logout <i class="fa fa-sign-out"></i></a>
+            </div>
+            <h1 class="pageHeader">Tweeto</h1>
+            <a class="topMenuLink" href="/">Broadcasts</a>
+            <a class="topMenuLink" style="border-right: 2px solid var(--darker);" href="/messages">Messages</a>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="content">
+            {% block content %}
+            {% endblock %}
+        </div>
+        
+        {% block sidebar %}
+        {% endblock %}
+        
+        <!-- CHAT WINDOW -->
+        <!-- <div id="chatWindow" class="chatWindow"></div> -->
+    </body>
+</html>
