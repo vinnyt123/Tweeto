@@ -21,7 +21,7 @@ loginServerAPIURL = "http://cs302.kiwi.land/api/"
 file_loader = FileSystemLoader('templates')
 env = Environment(loader=file_loader)
 
-port = ":5001"
+port = ":10014"
 
 class MainApp(object):
 
@@ -394,7 +394,7 @@ def urlRequest(url, payload, isGET):
         if (url.endswith("rx_broadcast") or url.endswith("ping_check")):
             response = urllib.request.urlopen(req, timeout=0.2)
         else:
-            response = urllib.request.urlopen(req, timeout=2)
+            response = urllib.request.urlopen(req, timeout=5)
         data = response.read() # read the received bytes
         encoding = response.info().get_content_charset('utf-8') #load encoding if possible (default to utf-8)
         response.close()
@@ -509,7 +509,6 @@ def detectIPAddressAndConnectionLocation():
         connection_location = 0
     else:
         connection_location = 1
-
     return (IP_address, connection_location)
 
 
