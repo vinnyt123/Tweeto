@@ -21,6 +21,8 @@ loginServerAPIURL = "http://cs302.kiwi.land/api/"
 file_loader = FileSystemLoader('templates')
 env = Environment(loader=file_loader)
 
+port = ":5001"
+
 class MainApp(object):
 
 	#CherryPy Configuration
@@ -49,26 +51,37 @@ class MainApp(object):
 
             broadcasts = cherrypy.session['database'].getAllBroadcasts()
 
-            return template.render(broadcasts=broadcasts)
+            return template.render(broadcasts=broadcasts, username = cherrypy.session['username'], status = cherrypy.session['status'].title())
 
         except KeyError: #There is no username
             raise cherrypy.HTTPRedirect('login')
     
     @cherrypy.expose
     def messages(self):
+        try:
+            template = env.get_template('messages.html')
 
-        template = env.get_template('messages.html')
-
-        list_users_response = urlRequest(loginServerAPIURL + "list_users", "", True)
+            list_users_response = urlRequest(loginServerAPIURL + "list_users", "", True)
             
-        if (list_users_response["response"] != 'ok'):
-            return template.render()
-        
-        usersList = list_users_response['users']
+            usersList = list_users_response['users']
 
-        cherrypy.session['online_users'] = usersList
+            cherrypy.session['online_users'] = usersList
 
-        return template.render(users=usersList)
+            return template.render(users=usersList, username = cherrypy.session['username'], status = cherrypy.session['status'].title())
+        except KeyError:
+            raise cherrypy.HTTPRedirect("/")
+
+    @cherrypy.expose
+    def online_users(self):
+        try:
+            template = env.get_template('online_users.html')
+            list_users_response = urlRequest(loginServerAPIURL + "list_users", "", True)
+            
+            usersList = list_users_response['users']
+
+            return template.render(users=usersList)
+        except KeyError:
+            raise cherrypy.HTTPRedirect("/")
 
 
     @cherrypy.expose
@@ -107,11 +120,26 @@ class MainApp(object):
     @cherrypy.expose
     def signout(self):
         """Logs the current user out, expires their session"""
+        print("signing out")
+        try:
+            (IP_address, connection_location) = detectIPAddressAndConnectionLocation()
+            payload = {
+                "connection_address": IP_address + port,
+                "connection_location": connection_location,
+                "incoming_pubkey": cherrypy.session['pubkey'],
+                "status" : "offline"
+            }
+            reportResponse = urlRequest(loginServerAPIURL + "report", payload, False)
+        except KeyError as e:
+            raise cherrypy.HTTPRedirect('/')
+
         username = cherrypy.session.get('username')
         if username is None:
+            print("XXXXX")
             pass
         else:
             cherrypy.lib.sessions.expire()
+            print("EXPIRED")
         raise cherrypy.HTTPRedirect('/')
 
     @cherrypy.expose
@@ -129,6 +157,19 @@ class MainApp(object):
         sendToAllOnlineUsers("rx_broadcast", payload, False)
 
         raise cherrypy.HTTPRedirect('/?bad_attempt=0')
+
+    @cherrypy.expose
+    def getBroadcasts(self):
+        try:
+            broadcasts = cherrypy.session['database'].getAllBroadcasts()
+            template = env.get_template('broadcasts_list.html')
+
+            return template.render(broadcasts=broadcasts)
+        except KeyError:
+            print("not logged in")
+            
+
+
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -149,22 +190,79 @@ class MainApp(object):
                     "sender_created_at" : string_time,
                     "signature" : signature
                 }
-
-                databaseTuple = (user['username'], cherrypy.session['username'], string_time, encrypted_message_with_my_pubkey, signature, cherrypy.session['pubkey'], cherrypy.session['loginserver_record'])
-                cherrypy.session['database'].insertMessage(databaseTuple)
-                return urlRequest("http://" + user['connection_address'] + "/api/rx_privatemessage", payload, False)
+                response = urlRequest("http://" + user['connection_address'] + "/api/rx_privatemessage", payload, False)['response']
+                if response == 'ok' and username != cherrypy.session['username']:
+                    databaseTuple = (user['username'], cherrypy.session['username'], string_time, encrypted_message_with_my_pubkey, signature, cherrypy.session['pubkey'], cherrypy.session['loginserver_record'])
+                    cherrypy.session['database'].insertMessage(databaseTuple)
+                return response
 
     @cherrypy.expose
     def getMessageHistory(self, userName):
-        template = env.get_template('chatMessages.html')
-        userName = userName.strip()
-        messages = cherrypy.session['database'].getMessageHistory(userName, cherrypy.session['username'], cherrypy.session['pubkey'])
-        for message in messages:
-            message['message'] = decrypt_message(message['message'])
+        try:
+            template = env.get_template('chatMessages.html')
+            userName = userName.strip()
+            messages = cherrypy.session['database'].getMessageHistory(userName, cherrypy.session['username'], cherrypy.session['pubkey'])
+            for message in messages:
+                message['message'] = decrypt_message(message['message'])
 
-        rendered = template.render(messages=messages)
-        print(rendered)
-        return rendered
+            rendered = template.render(messages=messages, username=cherrypy.session['username'])
+            print(rendered)
+            return rendered
+        except KeyError:
+            raise cherrypy.HTTPRedirect("/")
+
+    @cherrypy.expose
+    def report(self):
+        try:
+            (IP_address, connection_location) = detectIPAddressAndConnectionLocation()
+            payload = {
+                "connection_address": IP_address + port,
+                "connection_location": connection_location,
+                "incoming_pubkey": cherrypy.session['pubkey']
+            }
+            reportResponse = urlRequest(loginServerAPIURL + "report", payload, False)
+            return reportResponse['response']
+        except KeyError:
+            raise cherrypy.HTTPRedirect('/login')
+
+    @cherrypy.expose
+    def statusReport(self, status):
+        try:
+            (IP_address, connection_location) = detectIPAddressAndConnectionLocation()
+            payload = {
+                "connection_address": IP_address + port,
+                "connection_location": connection_location,
+                "incoming_pubkey": cherrypy.session['pubkey'],
+                "status" : status
+            }
+            reportResponse = urlRequest(loginServerAPIURL + "report", payload, False)
+            cherrypy.session['status'] = status
+            return reportResponse['response']
+        except KeyError:
+            print("XXXXXXXXXXXX REPORT FAILED " + reportResponse)
+            raise cherrypy.HTTPRedirect('/login')
+            return "Not logged in"
+    
+    @cherrypy.expose
+    def pingCheck(self):
+        try:
+            (ip_address, connection_location) = detectIPAddressAndConnectionLocation()
+            payload = {
+                "my_time": str(time.time()),
+                "connection_address": ip_address,
+                "connection_location": connection_location 
+            }
+
+            sendToAllOnlineUsers('ping_check', payload, False)
+
+            print("PING CHECKED")
+            return "ok"
+        except KeyError:
+            raise cherrypy.HTTPRedirect("/")
+
+
+            
+            
 
 
 
@@ -192,7 +290,6 @@ def encrypt_message(pubkey_str, message):
 
 def decrypt_message(encrypted_message):
     
-    print("XXXX" + encrypted_message + "XXXXX")
     encrypted_message_bytes = encrypted_message.encode('utf-8')
     sealedbox_privatekey = cherrypy.session['signing_key'].to_curve25519_private_key()
     unseal_box = nacl.public.SealedBox(sealedbox_privatekey)
@@ -211,10 +308,21 @@ def authoriseUserLogin(username, password, secret_password):
     }
     cherrypy.session['headers'] = headers
 
+    #Load new API
+    load_new_apikey_response = urlRequest(loginServerAPIURL + "load_new_apikey", "", True)
+
+    cherrypy.session['apikey'] = load_new_apikey_response['api_key']
+
+    headers.pop('Authorization', None)
+    headers['X-username'] = username
+    headers['X-apikey'] = cherrypy.session['apikey']
+
+    cherrypy.session['headers'] = headers
+
     #Ping number 1
     pingResponse = urlRequest(loginServerAPIURL + "ping", "", False)
 
-    if (not(pingResponse['response'] == 'ok' and pingResponse['authentication'] == 'basic')):
+    if (not(pingResponse['response'] == 'ok' and pingResponse['authentication'] == 'api-key')):
         print("ping1 response = " + str(pingResponse))
         return 1
 
@@ -261,7 +369,7 @@ def authoriseUserLogin(username, password, secret_password):
 
     #Report
     payload = {
-        "connection_address": IP_address,
+        "connection_address": IP_address + ":5000",
         "connection_location": connection_location,
         "incoming_pubkey": cherrypy.session['pubkey']
     }
@@ -271,6 +379,7 @@ def authoriseUserLogin(username, password, secret_password):
         print ("report response = " + reportResponse)
         return 1
     else:
+        cherrypy.session['status'] = 'online'
         return 0
           
     
@@ -282,15 +391,20 @@ def urlRequest(url, payload, isGET):
     payload = dictToBytes(payload)
     try:
         req = urllib.request.Request(url, data=payload, headers=cherrypy.session['headers'])
-        response = urllib.request.urlopen(req, timeout=15)
+        if (url.endswith("rx_broadcast") or url.endswith("ping_check")):
+            response = urllib.request.urlopen(req, timeout=0.2)
+        else:
+            response = urllib.request.urlopen(req, timeout=2)
         data = response.read() # read the received bytes
         encoding = response.info().get_content_charset('utf-8') #load encoding if possible (default to utf-8)
         response.close()
         JSON_object = json.loads(data.decode(encoding))
-        print(JSON_object)
+        # print(JSON_object)
         return JSON_object
-    except (urllib.error.HTTPError, urllib.error.URLError) as error:
-        print(error)
+    except (urllib.error.HTTPError, urllib.error.URLError, socket.error) as error:
+        return {"response" : "timeout"} 
+    except KeyError:
+        raise cherrypy.HTTPRedirect("/login")
     
 
 
@@ -398,18 +512,8 @@ def detectIPAddressAndConnectionLocation():
 
     return (IP_address, connection_location)
 
-def autoReport(pubkey):
-    threading.Timer(60, autoReport, [pubkey]).start()
-    (IP_address, connection_location) = detectIPAddressAndConnectionLocation()
-    payload = {
-        "connection_address": IP_address,
-        "connection_location": connection_location,
-        "incoming_pubkey": pubkey
-    }
-    reportResponse = urlRequest(loginServerAPIURL + "report", payload, False)
-    print("REPORTED AUTOMATICALLY")
-    if (reportResponse['response'] != 'ok'):
-        print("XXXXXXXXXXXX REPORT FAILED " + reportResponse)
+
+    
       
     
 

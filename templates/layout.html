@@ -9,18 +9,40 @@
         <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lobster">
         <meta charset="UTF-8">
+        {% block head %}
+        {% endblock %}
     </head>
+
+    {% block script %}
+    {% endblock %}
 
     <body class="body">
 
         <!-- HEADER -->
         <div class="headerArea">
             <div class="logoutArea">
-                <a class="logoutButton" href="/login">Logout <i class="fa fa-sign-out"></i></a>
+                <a class="logoutButton" href="/signout">Logout <i class="fa fa-sign-out"></i></a>
             </div>
             <h1 class="pageHeader">Tweeto</h1>
             <a class="topMenuLink" href="/">Broadcasts</a>
             <a class="topMenuLink" style="border-right: 2px solid var(--darker);" href="/messages">Messages</a>
+        </div>
+
+        <div class="leftSidebar">
+            <div class="filtersWrapper">
+                 <h3> Logged in as {{ username }} </h3>
+                 <p>Status: <span id="statusLabel">{{ status }}</span></p>
+                 <form action="/action_page.php">
+                    Change status: <select id="statusDropdown">
+                      <option value="online">Online</option>
+                      <option value="away">Away</option>
+                      <option value="busy">Busy</option>
+                      <option value="offline">Offline</option>
+                    </select>
+                    <br><br>
+                    <input id="changeStatusButton" type="button" value="Change">
+                  </form>
+            </div>
         </div>
 
         <!-- CONTENT -->

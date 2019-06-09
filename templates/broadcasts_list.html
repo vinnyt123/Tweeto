@@ -1,0 +1,7 @@
+{% for broadcast in broadcasts %}
+    <li>
+        <span class="username">{{ broadcast['username'] }}</span>
+        <span class="float-right">{{ broadcast['sender_created_at']|e }}</span>
+        <p>{{ broadcast['message']|e }}</p>
+    </li>
+{% endfor %}

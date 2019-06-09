@@ -212,6 +212,8 @@ body, html {
     display: inline-block;
     border-style: hidden;
     padding: 3px;
+    word-wrap: break-word;
+    max-width: 100%;
 }
 
 .sentMessage, .sendingMessage {
@@ -219,6 +221,7 @@ body, html {
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
     float: right;
+    clear: right;
 }
 
 .sentMessage {
@@ -238,6 +241,7 @@ body, html {
     background-color: var(--lightest);
     color: black;
     float: left;
+    clear: left;
 }
 
 .username {
@@ -248,4 +252,35 @@ body, html {
     width: 100%;
     display: inline-block;
     margin-bottom: 3px;
+}
+
+.leftSidebar {
+    position: fixed;
+    left: 0;
+    width: 300px;
+    top: 42px;
+    height: calc(100vh - 42px);
+    overflow-y: auto;
+}
+
+.filtersWrapper {
+    text-align: center;
+    background-color: white;
+    padding: 10px;
+}
+
+.messageTimestampRight, .messageTimestampLeft {
+    color: lightgray;
+    font-size: 10px;
+    margin-bottom: 0px;
+}
+
+.messageTimestampRight {
+    float: right;
+    clear: right;
+}
+
+.messageTimestampLeft {
+    float: left;
+    clear: left;
 }

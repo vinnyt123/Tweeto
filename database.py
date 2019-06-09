@@ -2,7 +2,6 @@ import sqlite3
 from sqlite3 import Error
 import ast
 from datetime import datetime
-import functions
 
 
 databasePath = "database.db"
@@ -83,7 +82,9 @@ class Database(object):
             messageDict['message'] = row[3]
             messageDict['sender_username'] = row[1]
             messageDict['target_username'] = row[0]
-            messageDict['sender_created_at'] = row[2]
+            sender_created_at = float(row[2])
+            formatted_sender_created_at = datetime.fromtimestamp(sender_created_at).strftime('%Y-%m-%d %H:%M:%S')
+            messageDict['sender_created_at'] = formatted_sender_created_at
             messageDict['target_pubkey'] = row[5]
             
             rows[i] = messageDict

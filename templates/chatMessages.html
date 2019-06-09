@@ -1,9 +1,11 @@
 {% for message in messages %}
     <div class="messageWrapper">
-        {% if message[0] == username %}
-            <div class="sentMessage">{{ message['message'] }}</div>
-        {% else %}
-            <div class="receivedMessage">{{ message['message'] }}</div>
-        {% endif %}
+            {% if message['sender_username'] == username %}
+                <div class="sentMessage">{{ message['message'] }}</div>
+                <p class="messageTimestampRight">{{ message['sender_created_at'] }}</p>
+            {% else %}
+                <div class="receivedMessage">{{ message['message'] }}</div>
+                <p class="messageTimestampLeft">{{ message['sender_created_at'] }}</p>
+            {% endif %}
     </div>
 {% endfor %}

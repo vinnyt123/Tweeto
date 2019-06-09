@@ -1,0 +1,18 @@
+<ul class="list-group">
+    {% if users is not none %}
+        {% for user in users %}
+        <a class="onlineUser"><li class="list-group-item">{{ user.username }} 
+            {% if user.status == 'away' %}
+                <span style="float:right; color:yellow; padding-top: 3px;">{{ user.status }}     <i class="fa fa-circle"></i></span>
+            {% elif user.status == 'busy' %}
+                <span style="float:right; color:orange; padding-top: 3px;">{{ user.status }}     <i class="fa fa-circle"></i></span>
+            {% elif user.status == 'offline' %}
+                <span style="float:right; color:red; padding-top: 3px;">{{ user.status }}     <i class="fa fa-circle"></i></span>
+            {% else %}
+                <span style="float:right; color:green; padding-top: 3px;">{{ user.status }}     <i class="fa fa-circle"></i></span>
+            {% endif %}
+        </li></a>
+        {% endfor %}
+    {% else %}
+    {% endif %}
+</ul>

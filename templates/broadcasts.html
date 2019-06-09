@@ -1,5 +1,21 @@
 
 {% extends "layout.html" %}
+
+{% block script %}
+    <script>
+        $(document).ready(function(){
+            setInterval(refreshBroadcasts, 10000)
+            
+            function refreshBroadcasts() {
+                $.post('/getBroadcasts', function(data) {
+                    console.log(data)
+                    $(".timeline").html(data);
+                });
+            }
+        });
+    </script>
+{% endblock %}
+
 {% block content %}
     <div class="broadcastWrapper">
         <form action="/sendbroadcast" method="post" enctype="multipart/form-data">
@@ -10,13 +26,7 @@
         
     <div class="newsFeed">
         <ul class="timeline">
-            {% for broadcast in broadcasts %}
-                <li>
-                    <span class="username">{{ broadcast['username'] }}</span>
-                    <span class="float-right">{{ broadcast['sender_created_at']|e }}</span>
-                    <p>{{ broadcast['message']|e }}</p>
-                </li>
-            {% endfor %}
+            {% include "broadcasts_list.html" %}
         </ul>
     </div>
 {% endblock %}

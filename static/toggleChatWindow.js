@@ -1,22 +1,27 @@
 $(document).ready(function(){
-    var selectedUser = ""
+    report();
+    ping_check();
 
-    $(".onlineUser").click(function(){
-        $(".sendMessageButton").prop('disabled', false);
-        selectedUser = $(this).text();
-        $(".personNameLabel").text(selectedUser);
-        $(".loading").show();
-        $.post('/getMessageHistory', {userName: selectedUser}, function(data) {
-            $(".loading").hide();
-            $(".chatArea").html(data);
-        });
-    });
+    setInterval(report, 60000);
+    setInterval(ping_check, 60000);
 
-    $(".sendMessageButton").click(function(){
-        $(".chatArea").append("<div class='messageWrapper'><div class='sendingMessage'>" + $(".messageBox").val() + "</div></div>");
-        $.post('/send_private_message', {username: selectedUser, message: $(".messageBox").val()}, function(data) {
-            $(".sendingMessage").addClass("sentMessage");
-            $(".sendingMessage").removeClass("sendingMessage");
+    function report(){
+        $.post('/report', function(data) {
+            console.log(data)
         });
-    });
+    }
+    
+    function ping_check(){
+        $.post('/pingCheck', function(data) {
+            console.log(data)
+        });
+    }
+
+    $("#changeStatusButton").click(function() {
+        var selectedOption = $("#statusDropdown").children("option:selected").val();
+        $("#statusLabel").text(selectedOption.charAt(0).toUpperCase() + selectedOption.slice(1));
+        $.post('/statusReport', {status:selectedOption}, function(data) {
+            console.log(data)
+        });
+    })
 });

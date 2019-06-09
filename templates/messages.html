@@ -1,5 +1,63 @@
 {% extends "layout.html" %}
 
+{% block script %}
+<script>
+    $(document).ready(function(){
+        var selectedUser = ""
+
+        $(".onlineUser").on("click", clickOnUser);
+
+        function clickOnUser() {
+            $(".sendMessageButton").prop('disabled', false);
+            selectedUser = $(this).text();
+            selectedUser = selectedUser.substring(0, selectedUser.indexOf(" "))
+            $(".personNameLabel").text(selectedUser);
+            $(".loading").show();
+            $.post('/getMessageHistory', {userName: selectedUser}, function(data) {
+                $(".loading").hide();
+                $(".chatArea").html(data);
+            });
+        }
+
+        $(".sendMessageButton").on("click", function(){
+            $(".chatArea").append("<div class='messageWrapper'><div class='sendingMessage'>" + $(".messageBox").val() + "</div></div>");
+            $.post('/send_private_message', {username: selectedUser, message: $(".messageBox").val()}, function(data) {
+                console.log(data)
+                if (data == 'ok') {
+                    $(".sendingMessage").addClass("sentMessage");
+                    $(".sendingMessage").removeClass("sendingMessage");
+                } else {
+                    $(".sendingMessage").after("<div style='float:right; margin-top:3px; margin-right:5px; color:red;'>ERROR SENDING MESSAGE</div>")
+                }
+            });
+        });
+
+        setInterval(refreshMessages, 10000);
+        function refreshMessages() {
+            if (selectedUser != ""){
+                $.post('/getMessageHistory', {userName: selectedUser}, function(data) {
+                    console.log(data)
+                    $(".chatArea").html(data);
+                });
+            }
+
+            $.post('/online_users', function(data) {
+                console.log(data);
+                $(".sidebar").html(data);
+            });
+            
+            $(document).on("click", ".onlineUser", clickOnUser); 
+        }
+    });
+</script>
+{% endblock %}
+
+
+
+{% block head %}
+    <!-- <script src="../static/messages.js"></script> -->
+{% endblock %}
+
 {% block content %}
     <div class="personNameArea">
         <h3 class="personNameLabel">Select a friend to chat with...</h3>
@@ -19,13 +77,6 @@
 {% block sidebar %}   
     <!-- SIDEBAR -->
     <div class="sidebar">
-        <ul class="list-group">
-        {% if users is not none %}
-            {% for user in users %}
-            <a class="onlineUser"><li class="list-group-item">{{ user.username }} <span style="float:right; color:green; padding-top: 3px;"><i class="fa fa-circle"></i></span></li></a>
-            {% endfor %}
-        {% else %}
-        {% endif %}
-        </ul>
+        {% include "online_users.html" %}
     </div>
 {% endblock %}
