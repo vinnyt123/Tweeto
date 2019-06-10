@@ -7,7 +7,7 @@ import myAPI
 
 # The address we listen for connections on
 LISTEN_IP = "0.0.0.0"
-LISTEN_PORT = 5001
+LISTEN_PORT = 10014
 
 def runMainApp():
     #set up the config

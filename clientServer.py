@@ -14,12 +14,10 @@ from database import Database
 from jinja2 import Environment, FileSystemLoader
 import socket
 
-startHTML = "<html><head><title>CS302 example</title><link rel='stylesheet' href='/static/example.css' /></head><body>"
-
 loginServerAPIURL = "http://cs302.kiwi.land/api/"
 
 file_loader = FileSystemLoader('templates')
-env = Environment(loader=file_loader)
+env = Environment(loader=file_loader, autoescape=True)
 
 port = ":10014"
 
@@ -34,10 +32,9 @@ class MainApp(object):
 	# If they try somewhere we don't know, catch it here and send them to the right place.
     @cherrypy.expose
     def default(self, *args, **kwargs):
-        """The default page, given when we don't recognise where the request is for."""
-        Page = startHTML + "I don't know where you're trying to go, so have a 404 Error."
         cherrypy.response.status = 404
-        return Page
+        template = env.get_template("404.html")
+        return template.render()
 
     # PAGES (which return HTML that can be viewed in browser)
     @cherrypy.expose
@@ -54,7 +51,7 @@ class MainApp(object):
             return template.render(broadcasts=broadcasts, username = cherrypy.session['username'], status = cherrypy.session['status'].title())
 
         except KeyError: #There is no username
-            raise cherrypy.HTTPRedirect('login')
+            raise cherrypy.HTTPRedirect('/signout')
     
     @cherrypy.expose
     def messages(self):
@@ -69,7 +66,7 @@ class MainApp(object):
 
             return template.render(users=usersList, username = cherrypy.session['username'], status = cherrypy.session['status'].title())
         except KeyError:
-            raise cherrypy.HTTPRedirect("/")
+            raise cherrypy.HTTPRedirect('/')
 
     @cherrypy.expose
     def online_users(self):
@@ -81,28 +78,19 @@ class MainApp(object):
 
             return template.render(users=usersList)
         except KeyError:
-            raise cherrypy.HTTPRedirect("/")
+            return "error"
 
 
     @cherrypy.expose
     def login(self, bad_attempt = 0):
-        Page = startHTML 
+        template = env.get_template("login.html")
+         
         if bad_attempt == '1':
-            Page += "<font color='red'>Invalid username/password!</font>"
+            return template.render(passwordError='Invalid username/password', secretPasswordError="") 
         if bad_attempt == '2':
-            Page += "<font color='red'>Invalid secret key password!</font>"
-            
-        Page += '<form action="/signin" method="post" enctype="multipart/form-data">'
-        Page += 'Username: <input type="text" name="username"/><br/>'
-        Page += 'Password: <input type="text" name="password"/>'
-        Page += 'Secret Box Password: <input type="text" name="secret_password">'
-        Page += '<input type="submit" value="Login"/></form>'
-        return Page
-    
-    @cherrypy.expose    
-    def sum(self, a=0, b=0): #All inputs are strings by default
-        output = int(a)+int(b)
-        return str(output)
+            return template.render(passwordError='', secretPasswordError="Invalid secret key password") 
+        else:
+            return template.render(passwordError='', secretPasswordError='')   
         
     # LOGGING IN AND OUT
     @cherrypy.expose
@@ -112,7 +100,6 @@ class MainApp(object):
         if error == 0:
             cherrypy.session['username'] = username
             cherrypy.session['password'] = password
-            #autoReport(cherrypy.session['pubkey'])
             raise cherrypy.HTTPRedirect('/')
         else:
             raise cherrypy.HTTPRedirect('/login?bad_attempt={}'.format(error))
@@ -131,7 +118,7 @@ class MainApp(object):
             }
             reportResponse = urlRequest(loginServerAPIURL + "report", payload, False)
         except KeyError as e:
-            raise cherrypy.HTTPRedirect('/')
+            raise cherrypy.HTTPRedirect('/login')
 
         username = cherrypy.session.get('username')
         if username is None:
@@ -140,7 +127,7 @@ class MainApp(object):
         else:
             cherrypy.lib.sessions.expire()
             print("EXPIRED")
-        raise cherrypy.HTTPRedirect('/')
+        raise cherrypy.HTTPRedirect('/login')
 
     @cherrypy.expose
     def sendbroadcast(self, message):
@@ -166,7 +153,7 @@ class MainApp(object):
 
             return template.render(broadcasts=broadcasts)
         except KeyError:
-            print("not logged in")
+            return "error"
             
 
 
@@ -206,10 +193,9 @@ class MainApp(object):
                 message['message'] = decrypt_message(message['message'])
 
             rendered = template.render(messages=messages, username=cherrypy.session['username'])
-            print(rendered)
             return rendered
         except KeyError:
-            raise cherrypy.HTTPRedirect("/")
+            return "error"
 
     @cherrypy.expose
     def report(self):
@@ -218,12 +204,13 @@ class MainApp(object):
             payload = {
                 "connection_address": IP_address + port,
                 "connection_location": connection_location,
-                "incoming_pubkey": cherrypy.session['pubkey']
+                "incoming_pubkey": cherrypy.session['pubkey'],
+                "status" : cherrypy.session['status']
             }
             reportResponse = urlRequest(loginServerAPIURL + "report", payload, False)
             return reportResponse['response']
         except KeyError:
-            raise cherrypy.HTTPRedirect('/login')
+            return "error"
 
     @cherrypy.expose
     def statusReport(self, status):
@@ -239,9 +226,7 @@ class MainApp(object):
             cherrypy.session['status'] = status
             return reportResponse['response']
         except KeyError:
-            print("XXXXXXXXXXXX REPORT FAILED " + reportResponse)
-            raise cherrypy.HTTPRedirect('/login')
-            return "Not logged in"
+            return "error"
     
     @cherrypy.expose
     def pingCheck(self):
@@ -258,7 +243,7 @@ class MainApp(object):
             print("PING CHECKED")
             return "ok"
         except KeyError:
-            raise cherrypy.HTTPRedirect("/")
+            return "error"
 
 
             
@@ -310,8 +295,11 @@ def authoriseUserLogin(username, password, secret_password):
 
     #Load new API
     load_new_apikey_response = urlRequest(loginServerAPIURL + "load_new_apikey", "", True)
+    try:
+        cherrypy.session['apikey'] = load_new_apikey_response['api_key']
+    except KeyError:
+        return 1
 
-    cherrypy.session['apikey'] = load_new_apikey_response['api_key']
 
     headers.pop('Authorization', None)
     headers['X-username'] = username
@@ -371,7 +359,8 @@ def authoriseUserLogin(username, password, secret_password):
     payload = {
         "connection_address": IP_address + ":5000",
         "connection_location": connection_location,
-        "incoming_pubkey": cherrypy.session['pubkey']
+        "incoming_pubkey": cherrypy.session['pubkey'],
+        "status" : "online",
     }
     reportResponse = urlRequest(loginServerAPIURL + "report", payload, False)
 
@@ -394,7 +383,7 @@ def urlRequest(url, payload, isGET):
         if (url.endswith("rx_broadcast") or url.endswith("ping_check")):
             response = urllib.request.urlopen(req, timeout=0.2)
         else:
-            response = urllib.request.urlopen(req, timeout=5)
+            response = urllib.request.urlopen(req, timeout=10)
         data = response.read() # read the received bytes
         encoding = response.info().get_content_charset('utf-8') #load encoding if possible (default to utf-8)
         response.close()
@@ -488,12 +477,13 @@ def decrypt_privatedata(private_data_b64, secret_password):
     cherrypy.session['pubkey'] = pubkey_hex_str
 
 def createSecretBox(secret_password):
-    password_bytes = bytes(secret_password.encode('utf-8'))
+    key_password = bytes(secret_password, 'utf-8')
+    long_salt = nacl.pwhash.argon2i.SALTBYTES * key_password
 
-    salt = (password_bytes * 16)[0:16]
-
-    symmetric_key = nacl.pwhash.argon2id.kdf(nacl.secret.SecretBox.KEY_SIZE, password_bytes, salt, opslimit=nacl.pwhash.argon2i.OPSLIMIT_SENSITIVE, memlimit=nacl.pwhash.argon2i.MEMLIMIT_SENSITIVE, encoder=nacl.encoding.HexEncoder)
-
+    salt = long_salt[0:nacl.pwhash.argon2i.SALTBYTES]
+    ops = nacl.pwhash.argon2i.OPSLIMIT_SENSITIVE
+    mem = nacl.pwhash.argon2i.MEMLIMIT_SENSITIVE
+    symmetric_key = nacl.pwhash.argon2i.kdf(nacl.secret.SecretBox.KEY_SIZE, key_password, salt=salt, opslimit=ops, memlimit=mem, encoder=nacl.encoding.HexEncoder)
     return nacl.secret.SecretBox(symmetric_key, encoder=nacl.encoding.HexEncoder)
 
 def dictToBytes(dictionary):

@@ -20,14 +20,17 @@
         }
 
         $(".sendMessageButton").on("click", function(){
-            $(".chatArea").append("<div class='messageWrapper'><div class='sendingMessage'>" + $(".messageBox").val() + "</div></div>");
-            $.post('/send_private_message', {username: selectedUser, message: $(".messageBox").val()}, function(data) {
+            $(".chatArea").append("<div class='messageWrapper'><div class='sendingMessage'>" + $(".messageBox").val().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") + "</div></div>");
+            var messageText = $(".messageBox").val();
+            $(".messageBox").val("");
+            $.post('/send_private_message', {username: selectedUser, message: messageText}, function(data) {
                 console.log(data)
                 if (data == 'ok') {
                     $(".sendingMessage").addClass("sentMessage");
                     $(".sendingMessage").removeClass("sendingMessage");
                 } else {
-                    $(".sendingMessage").after("<div style='float:right; margin-top:3px; margin-right:5px; color:red;'>ERROR SENDING MESSAGE</div>")
+                    var errorMessage = ("<div style='float:right; margin-top:3px; margin-right:5px; color:red;'>ERROR SENDING MESSAGE</div>");
+                    $(".sendingMessage").after(errorMessage)
                 }
             });
         });
@@ -55,7 +58,7 @@
 
 
 {% block head %}
-    <!-- <script src="../static/messages.js"></script> -->
+    <title>Tweeto - Messages</title>
 {% endblock %}
 
 {% block content %}
@@ -69,7 +72,7 @@
     </div>
     <div class="enterTextArea">
         <form>
-            <textarea class="messageBox" rows="2"></textarea>
+            <textarea class="messageBox fixChromeBug" rows="2"></textarea>
             <input type="button" class="sendMessageButton" value="Send" disabled></input>
         </form>
     </div>
