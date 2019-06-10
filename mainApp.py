@@ -52,13 +52,7 @@ def runMainApp():
                             'engine.autoreload.on': True,
                            })
 
-    #cherrypy.tools.auth = cherrypy.Tool('before_handler', auth.check_auth, 99)
-
-    print("========================================")
-    print("             Hammond Pearce")
-    print("         University of Auckland")
-    print("   COMPSYS302 - Example client web app")
-    print("========================================")   
+    #cherrypy.tools.auth = cherrypy.Tool('before_handler', auth.check_auth, 99)  
 
     # Start the web server
     cherrypy.engine.start()
