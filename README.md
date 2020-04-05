@@ -6,7 +6,7 @@ Tweeto is a social media application created using the CherryPy web framework fo
 
 The application connected to a central server which provided an API returning addresses and public keys of other users. My application, as well as the applications of classmates, hosted their own servers with APIs that followed a communication protocol we developed as a group. This meant once we had retrieved IP addresses of classmates from the central server, we could send messages to eachother entirely peer-to-peer.
 
-Messages were encrypted against the public key of the recipient before being sent, and were decrypted using the corresponding private key upon recieving the message. Public/private key pair generation as well as encryption and decryption functions were provided by the PyNacl library. Messages and public broadcasts were saved when recieved, to a relational database file on our server, and queried using SQL, facilitated by the sqlite3 module for Python. 
+Messages were encrypted against the public key of the recipient before being sent, and were decrypted using the corresponding private key upon recieving the message. Public/private key pair generation as well as encryption and decryption functions were provided by the PyNacl python module. Messages and public broadcasts were saved when recieved, to a relational database file on our server, and queried using SQL, facilitated by the sqlite3 module for Python. 
 
 HTML, CSS, and Javascript were also used for creation of the user interface with the help of the Jinja2 python module for page templating. JQuery was used for Ajax refreshing of the chat windows and online users lists.
 
