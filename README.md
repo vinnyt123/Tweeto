@@ -25,8 +25,11 @@ Note: the application no longer runs due to the central server that was hosted b
 The login screen has three required text inputs: username, password, and secret box password. The username and password behave as normal with upi as the username and github username underscore student id number as the password. The secret box password is used for encrypting and decrypting private data. If a user already has private data saved on the login server, they must enter their secret password that they previously created or 'incorrect secret password' will be shown and they will not be logged in. If they have not yet added any private data, they can enter any password into the secret password box and this will be set as their password for decrypting private data. This new secret password must be remembered as they will have to use it to log in on all future attempts.
 
 ## Screenshots
+*Login Screen*
 ![Login Screen](https://drive.google.com/uc?export=view&id=17dPW6Gmkidn59hRT-yRtl_Ddnx6PsWOh)
 
+*Private Message Screen*
 ![Private Message Screen](https://drive.google.com/uc?export=view&id=1kHEadAZsgOnquNDWNQRWjSUNBw0E5tYQ)
 
+*Public Broadcast Screen*
 ![Public Broadcast Screen](https://drive.google.com/uc?export=view&id=1VhwHkdEg9-1h1QbrD8CqBCTjIhlYGwft)
